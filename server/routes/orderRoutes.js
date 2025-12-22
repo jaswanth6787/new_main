@@ -1,6 +1,8 @@
 import express from 'express';
 import mongoose from 'mongoose';
+import Customer from '../models/Customer.js';
 import Order from '../models/Order.js';
+import { generateCustomerId, generateOrderId } from '../utils/idGenerator.js';
 
 const router = express.Router();
 
@@ -39,8 +41,64 @@ router.post('/orders', async (req, res) => {
       });
     }
 
+    // Link Customer & Generate IDs
+    let customer = await mongoose.model('Customer').findOne({ phone });
+    let currentCustomerId;
+
+    if (customer) {
+      // Customer exists
+      if (!customer.customerId) {
+        // Legacy customer (exists but no ID), generate one now
+        customer.customerId = await generateCustomerId();
+        await customer.save();
+      }
+      currentCustomerId = customer.customerId;
+
+      // Update existing customer details
+      customer.name = fullName;
+      if (age) customer.age = age;
+
+      // Add address if new
+      // Simple check to avoid duplicates (optional improvement)
+      customer.addresses.push({
+        house: address.house,
+        area: address.area,
+        landmark: address.landmark || '',
+        pincode: address.pincode,
+        mapLink: address.mapLink || '',
+        label: address.label || 'Home'
+      });
+      // We will push the order ID after saving the order
+    } else {
+      // Create new customer
+      const newCustomerId = await generateCustomerId();
+      currentCustomerId = newCustomerId;
+
+      customer = new mongoose.model('Customer')({
+        customerId: newCustomerId,
+        phone,
+        name: fullName,
+        age: age || 0,
+        addresses: [{
+          house: address.house,
+          area: address.area,
+          landmark: address.landmark || '',
+          pincode: address.pincode,
+          mapLink: address.mapLink || '',
+          label: address.label || 'Home'
+        }],
+        orders: [] // Will push later
+      });
+      await customer.save();
+    }
+
+    // Generate Order ID based on Customer ID
+    const newOrderId = await generateOrderId(currentCustomerId);
+
     // Create new order
     const order = new Order({
+      customerId: currentCustomerId,
+      orderId: newOrderId,
       fullName,
       phone,
       periodsStarted: new Date(periodsStarted),
@@ -65,48 +123,9 @@ router.post('/orders', async (req, res) => {
     // Save to database
     const savedOrder = await order.save();
 
-    // Update Customer Record
-    try {
-      // Find existing or create new customer
-      let customer = await mongoose.model('Customer').findOne({ phone });
-
-      if (customer) {
-        // Update existing customer
-        customer.name = fullName; // Update name to latest
-        if (age) customer.age = age; // Update age if provided
-        customer.addresses.push({
-          house: address.house,
-          area: address.area,
-          landmark: address.landmark || '',
-          pincode: address.pincode,
-          mapLink: address.mapLink || '',
-          label: address.label || 'Home'
-        });
-        customer.orders.push(savedOrder._id);
-        await customer.save();
-      } else {
-        // Create new customer (fallback if not created in registration step)
-        // Note: Age might be missing here if bypassed, but we'll create the record anyway
-        customer = new mongoose.model('Customer')({
-          phone,
-          name: fullName,
-          age: age || 0, // Use provided age or default to 0
-          addresses: [{
-            house: address.house,
-            area: address.area,
-            landmark: address.landmark || '',
-            pincode: address.pincode,
-            mapLink: address.mapLink || '',
-            label: address.label || 'Home'
-          }],
-          orders: [savedOrder._id]
-        });
-        await customer.save();
-      }
-    } catch (customerError) {
-      console.error('Error updating customer record:', customerError);
-      // Don't fail the order if customer update fails
-    }
+    // Link order to customer
+    customer.orders.push(savedOrder._id);
+    await customer.save();
 
     res.status(201).json({
       success: true,

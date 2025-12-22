@@ -7,12 +7,22 @@ const orderSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+  customerId: {
+    type: String,
+    // required: true // Can't be required immediately if legacy data exists without migration
+    trim: true
+  },
+  orderId: {
+    type: String,
+    unique: true,
+    trim: true
+  },
   phone: {
     type: String,
     required: true,
     trim: true
   },
-  
+
   // Cycle Information
   periodsStarted: {
     type: Date,
@@ -22,7 +32,7 @@ const orderSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
-  
+
   // Order Details
   phase: {
     type: String,
@@ -41,7 +51,7 @@ const orderSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
-  
+
   // Delivery Address
   address: {
     house: {
@@ -73,7 +83,7 @@ const orderSchema = new mongoose.Schema({
       trim: true
     }
   },
-  
+
   // Payment Information
   paymentMethod: {
     type: String,
@@ -81,19 +91,19 @@ const orderSchema = new mongoose.Schema({
     enum: ['Cash on Delivery', 'UPI', 'Card', 'Net Banking'],
     default: 'Cash on Delivery'
   },
-  
+
   // Order Status
   orderStatus: {
     type: String,
     enum: ['Pending', 'Confirmed', 'Processing', 'Shipped', 'Delivered', 'Cancelled'],
     default: 'Pending'
   },
-  
+
   // Additional Information
   message: {
     type: String
   },
-  
+
   // Timestamps
   orderDate: {
     type: Date,

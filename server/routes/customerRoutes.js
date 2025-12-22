@@ -1,6 +1,8 @@
 import express from 'express';
 import Customer from '../models/Customer.js';
+import Customer from '../models/Customer.js';
 import Order from '../models/Order.js';
+import { generateCustomerId } from '../utils/idGenerator.js';
 
 const router = express.Router();
 
@@ -53,7 +55,9 @@ router.post('/customers', async (req, res) => {
             await customer.save();
         } else {
             // Create new
+            const newCustomerId = await generateCustomerId();
             customer = new Customer({
+                customerId: newCustomerId,
                 phone,
                 name,
                 age,

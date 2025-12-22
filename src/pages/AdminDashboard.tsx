@@ -579,7 +579,7 @@ export default function AdminDashboard() {
                         <div>
                           <p className="font-semibold text-lg">{customer.fullName}</p>
                           <p className="text-sm text-gray-500">
-                            ID: <span className="font-mono">{customer.customerId}</span> |
+                            ID: <span className="font-mono">{customer.customerId || 'N/A'}</span> |
                             Phone: {customer.phone}
                           </p>
                           <div className="flex gap-4 mt-2 text-sm">
