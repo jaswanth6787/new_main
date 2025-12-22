@@ -73,6 +73,20 @@ router.post('/customers', async (req, res) => {
     }
 });
 
+// Get all customers
+router.get('/customers', async (req, res) => {
+    try {
+        const customers = await Customer.find().sort({ createdAt: -1 });
+        res.status(200).json({
+            success: true,
+            data: customers
+        });
+    } catch (error) {
+        console.error('Error fetching customers:', error);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+});
+
 // Get Customer Profile with Orders
 router.get('/customer-profile/:phone', async (req, res) => {
     try {

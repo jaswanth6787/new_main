@@ -86,6 +86,12 @@ export default function AdminDashboard() {
       });
       const ordersData = await ordersRes.json();
 
+      // Get customers
+      const customersRes = await fetch(`${API_BASE_URL}/customers`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const customersData = await customersRes.json();
+
       // Check if API returned an error
       if (!ordersData.success || !ordersData.data) {
         console.error('API Error:', ordersData.message || ordersData.error);
@@ -116,16 +122,55 @@ export default function AdminDashboard() {
       const pendingOrders = ordersData.data?.filter((o: any) => o.orderStatus === 'Pending').length || 0;
       const deliveredOrders = ordersData.data?.filter((o: any) => o.orderStatus === 'Delivered').length || 0;
 
-      // Get unique customers
-      const uniquePhones = new Set(ordersData.data?.map((o: any) => o.phone) || []);
-      const totalCustomers = uniquePhones.size;
+      // Process Customers
+      // Start with real customers from DB
+      const dbCustomers = customersData.success ? customersData.data : [];
+
+      const customerMap = new Map();
+
+      // 1. Add DB customers first
+      dbCustomers.forEach((c: any) => {
+        customerMap.set(c.phone, {
+          ...c,
+          totalOrders: 0,
+          totalSpent: 0
+        });
+      });
+
+      // 2. Process orders to update stats or add missing customers (from legacy orders)
+      ordersData.data?.forEach((order: any) => {
+        if (!customerMap.has(order.phone)) {
+          // This order has a phone number not in our Customers DB (legacy)
+          // We create a temporary object, BUT it won't have an _id for deleting
+          customerMap.set(order.phone, {
+            phone: order.phone,
+            fullName: order.fullName, // orders use fullName, customers use name
+            name: order.fullName,
+            age: 'N/A',
+            customerId: order.customerId || 'N/A',
+            totalOrders: 0,
+            totalSpent: 0,
+            _id: null // Explicitly null if virtual
+          });
+        }
+
+        const customer = customerMap.get(order.phone);
+        customer.totalOrders++;
+        customer.totalSpent += order.totalPrice || 0;
+        // Ensure name is set if missing (fallback)
+        if (!customer.fullName && customer.name) customer.fullName = customer.name;
+        if (!customer.name && customer.fullName) customer.name = customer.fullName;
+      });
+
+      // Get unique customers count
+      const totalCustomers = customerMap.size;
 
       setStats({
         overview: {
           totalCustomers,
           totalOrders,
           totalRevenue,
-          activeCustomers: totalCustomers
+          activeCustomers: totalCustomers // Active in the sense they exist
         },
         orderStatus: {
           pending: pendingOrders,
@@ -134,22 +179,6 @@ export default function AdminDashboard() {
         recentOrders: ordersData.data?.slice(0, 10) || []
       });
 
-      // Set customers from orders
-      const customerMap = new Map();
-      ordersData.data?.forEach((order: any) => {
-        if (!customerMap.has(order.phone)) {
-          customerMap.set(order.phone, {
-            phone: order.phone,
-            fullName: order.fullName,
-            customerId: order.customerId || 'N/A',
-            totalOrders: 0,
-            totalSpent: 0
-          });
-        }
-        const customer = customerMap.get(order.phone);
-        customer.totalOrders++;
-        customer.totalSpent += order.totalPrice || 0;
-      });
       setCustomers(Array.from(customerMap.values()));
     } catch (error) {
       console.error('Error loading data:', error);
