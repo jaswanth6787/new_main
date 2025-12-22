@@ -1,6 +1,5 @@
 import express from 'express';
 import Customer from '../models/Customer.js';
-import Customer from '../models/Customer.js';
 import Order from '../models/Order.js';
 import { generateCustomerId } from '../utils/idGenerator.js';
 
@@ -77,10 +76,22 @@ router.post('/customers', async (req, res) => {
     }
 });
 
-// Get all customers
+// Get all customers (with optional search)
 router.get('/customers', async (req, res) => {
     try {
-        const customers = await Customer.find().sort({ createdAt: -1 });
+        const { search } = req.query;
+        const query = {};
+
+        if (search) {
+            const searchRegex = new RegExp(search, 'i');
+            query.$or = [
+                { customerId: searchRegex },
+                { name: searchRegex },
+                { phone: searchRegex }
+            ];
+        }
+
+        const customers = await Customer.find(query).sort({ createdAt: -1 });
         res.status(200).json({
             success: true,
             data: customers

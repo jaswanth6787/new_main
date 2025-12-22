@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import {
   Users, ShoppingCart, DollarSign, TrendingUp, Search,
-  LogOut, Package, CheckCircle, Clock, Truck, XCircle, RefreshCw
+  LogOut, Package, CheckCircle, Clock, Truck, XCircle, RefreshCw, Download
 } from "lucide-react";
 
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -80,14 +80,18 @@ export default function AdminDashboard() {
     try {
       const token = localStorage.getItem('adminToken');
 
+      // Build query string
+      const searchParams = new URLSearchParams();
+      if (searchQuery) searchParams.append('search', searchQuery);
+
       // Get orders
-      const ordersRes = await fetch(`${API_BASE_URL}/orders`, {
+      const ordersRes = await fetch(`${API_BASE_URL}/orders?${searchParams.toString()}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const ordersData = await ordersRes.json();
 
       // Get customers
-      const customersRes = await fetch(`${API_BASE_URL}/customers`, {
+      const customersRes = await fetch(`${API_BASE_URL}/customers?${searchParams.toString()}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const customersData = await customersRes.json();
@@ -396,6 +400,42 @@ export default function AdminDashboard() {
     ? orders
     : orders.filter(o => o.orderStatus === orderFilter);
 
+  const handleExportCSV = () => {
+    const headers = [
+      'Order ID', 'Date', 'Customer ID', 'Name', 'Phone', 'Status',
+      'Total Price', 'Quantity', 'Phase', 'Address', 'Pincode'
+    ];
+
+    // Convert orders to CSV rows
+    const rows = filteredOrders.map(order => [
+      order.orderId || order._id,
+      new Date(order.createdAt).toLocaleDateString(),
+      order.customerId || 'N/A',
+      `"${order.fullName}"`,
+      order.phone,
+      order.orderStatus,
+      order.totalPrice,
+      order.totalQuantity,
+      order.phase,
+      `"${order.address.house}, ${order.address.area}"`,
+      order.address.pincode
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(r => r.join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `orders_export_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -634,6 +674,10 @@ export default function AdminDashboard() {
                   <SelectItem value="Cancelled">Cancelled</SelectItem>
                 </SelectContent>
               </Select>
+              <Button onClick={handleExportCSV} variant="outline" className="ml-auto">
+                <Download className="w-4 h-4 mr-2" />
+                Export CSV
+              </Button>
             </div>
 
             <Card>
