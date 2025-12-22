@@ -7,6 +7,8 @@ import { Search, Package, Calendar, Clock, CheckCircle, Truck, XCircle } from "l
 import { toast } from "sonner";
 import { Navbar } from "@/components/Navbar";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+
 export default function CustomerProfile() {
     const [phone, setPhone] = useState("");
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -22,7 +24,11 @@ export default function CustomerProfile() {
 
         setLoading(true);
         try {
-            const response = await fetch(`http://localhost:5000/api/customer-profile/${phone}`);
+            const url = API_BASE_URL
+                ? `${API_BASE_URL}/customer-profile/${phone}`
+                : `http://localhost:5000/api/customer-profile/${phone}`;
+
+            const response = await fetch(url);
             const data = await response.json();
 
             if (data.success) {
