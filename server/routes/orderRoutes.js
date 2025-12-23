@@ -159,11 +159,27 @@ router.get('/orders', async (req, res) => {
       });
     }
 
-    const { phone, status, page = 1, limit = 10 } = req.query;
+    const { phone, status, search, page = 1, limit = 10 } = req.query;
 
     const query = {};
+
+    // Exact phone match
     if (phone) query.phone = phone;
+
+    // Status filter
     if (status) query.orderStatus = status;
+
+    // General Search (ID, CustomerI D, Name, Phone)
+    if (search) {
+      const searchRegex = new RegExp(search, 'i'); // Case-insensitive
+      query.$or = [
+        { orderId: searchRegex },
+        { customerId: searchRegex },
+        { fullName: searchRegex },
+        { phone: searchRegex },
+        { 'address.pincode': searchRegex } // Optional: also search pincode
+      ];
+    }
 
     const orders = await Order.find(query)
       .sort({ orderDate: -1 })

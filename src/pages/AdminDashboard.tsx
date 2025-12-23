@@ -733,9 +733,15 @@ export default function AdminDashboard() {
                                   <SelectItem value="Processing">Processing</SelectItem>
                                   <SelectItem value="Shipped">Shipped</SelectItem>
                                   <SelectItem value="Delivered">Delivered</SelectItem>
-                                  <SelectItem value="Cancelled">Cancelled</SelectItem>
                                 </SelectContent>
                               </Select>
+
+                              {order.orderStatus === 'Shipped' && (
+                                <Badge variant="outline" className="bg-blue-50 text-blue-600 border-blue-200 hidden md:flex items-center gap-1">
+                                  <Truck className="w-3 h-3" />
+                                  Ram
+                                </Badge>
+                              )}
 
                               <div className="flex gap-2 ml-auto md:ml-0">
                                 <Button

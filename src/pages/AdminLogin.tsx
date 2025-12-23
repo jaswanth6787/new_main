@@ -22,18 +22,30 @@ export default function AdminLogin() {
       // Store token in localStorage
       const token = btoa(`${username}:${password}`);
       localStorage.setItem("adminToken", token);
+      localStorage.setItem("userRole", "admin");
       localStorage.setItem("adminUsername", username);
-      
+
       toast.success("Login successful!", {
         description: "Welcome to the admin dashboard",
       });
       navigate("/admin/dashboard");
+    } else if (username === "ram@123" && password === "123") {
+      // Delivery Boy Login
+      const token = btoa(`${username}:${password}`);
+      localStorage.setItem("deliveryToken", token);
+      localStorage.setItem("userRole", "delivery");
+      localStorage.setItem("adminUsername", "Ram"); // Display name
+
+      toast.success("Login successful!", {
+        description: "Welcome to the delivery dashboard",
+      });
+      navigate("/delivery/dashboard");
     } else {
       toast.error("Login failed", {
         description: "Invalid username or password",
       });
     }
-    
+
     setLoading(false);
   };
 
@@ -97,7 +109,8 @@ export default function AdminLogin() {
 
             <div className="mt-6 text-center text-sm text-muted-foreground">
               <p>Demo Credentials:</p>
-              <p className="font-mono mt-1">Username: nany | Password: 123</p>
+              <p className="font-mono mt-1">Admin: nany | 123</p>
+              <p className="font-mono mt-1">Delivery: ram@123 | 123</p>
             </div>
           </CardContent>
         </Card>
