@@ -10,7 +10,7 @@ import {
   Users, ShoppingCart, DollarSign, TrendingUp, Search,
   LogOut, Package, CheckCircle, Clock, Truck, XCircle, RefreshCw, Download, MapPin, BarChart3,
   Trash2, Edit, MessageSquare, Eye, MoreHorizontal, Calendar, PieChart, ChevronRight, LineChart,
-  FileText, Filter
+  FileText, Filter, MessageCircle, Check, LayoutDashboard, ShoppingBag
 } from "lucide-react";
 
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -70,6 +70,17 @@ export default function AdminDashboard() {
   // View Message State
   const [viewMessageOpen, setViewMessageOpen] = useState(false);
   const [viewMessageData, setViewMessageData] = useState<{ title: string, message: string } | null>(null);
+
+  // WhatsApp Button State
+  const [sentMessages, setSentMessages] = useState<Set<string>>(() => {
+    const saved = localStorage.getItem('sentWhatsAppMessages');
+    return saved ? new Set(JSON.parse(saved)) : new Set();
+  });
+
+  // Save to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('sentWhatsAppMessages', JSON.stringify(Array.from(sentMessages)));
+  }, [sentMessages]);
 
   useEffect(() => {
     // Check if logged in
@@ -592,6 +603,30 @@ export default function AdminDashboard() {
     document.body.removeChild(link);
   };
 
+  const handleWhatsAppSend = (order: any) => {
+    let message = "";
+    const customerName = order.fullName || "Valued Customer";
+    const orderId = order.orderId || order._id.slice(-6).toUpperCase();
+
+    if (order.orderStatus === 'Confirmed') {
+      message = `Hi ${customerName}, your order (ID: ${orderId}) is confirmed ${String.fromCodePoint(0x2705)}`;
+    } else if (order.orderStatus === 'Shipped') {
+      message = `Hi ${customerName}, your order (ID: ${orderId}) is shipped ${String.fromCodePoint(0x1F69A)}`;
+    } else if (order.orderStatus === 'Delivered') {
+      message = `Hi ${customerName} ${String.fromCodePoint(0x1F337)}\nYour order (Order ID: ${orderId}) has been delivered successfully ${String.fromCodePoint(0x1F4E6)}\nWe hope it supports your wellness journey ${String.fromCodePoint(0x1F495)}`;
+    } else {
+      message = `Hi ${customerName}, update on your order (ID: ${orderId}): Status is ${order.orderStatus}.`;
+    }
+
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappUrl = `https://wa.me/${order.phone}?text=${encodedMessage}`;
+
+    window.open(whatsappUrl, '_blank');
+
+    // Update local state to show "Sanded" (Sent)
+    setSentMessages(prev => new Set(prev).add(order._id));
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -609,82 +644,86 @@ export default function AdminDashboard() {
   const reportAvgOrderValue = reportTotalOrders > 0 ? Math.round(reportTotalRevenue / reportTotalOrders) : 0;
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans text-gray-900">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-100 sticky top-0 z-30 shadow-sm backdrop-blur-md bg-opacity-90">
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Admin Dashboard</h1>
-              <p className="text-sm font-medium text-green-600 mt-1">Cycle Harmony Laddus CRM</p>
-            </div>
-            <Button
-              variant="ghost"
-              onClick={handleLogout}
-              className="flex items-center gap-2 text-gray-500 hover:text-red-600 hover:bg-red-50 transition-colors"
-            >
-              <LogOut className="h-5 w-5" />
-              Logout
-            </Button>
-          </div>
+    <div className="flex min-h-screen bg-gray-50 font-sans text-gray-900">
+      {/* Sidebar */}
+      <aside className="w-64 bg-white border-r border-gray-100 flex-shrink-0 fixed h-full z-20 overflow-y-auto">
+        <div className="p-6 border-b border-gray-50">
+          <h1 className="text-xl font-extrabold text-gray-900 tracking-tight">Admin<span className="text-pink-600">Panel</span></h1>
+          <p className="text-xs font-medium text-green-600 mt-0.5">Cycle Harmony Laddus</p>
         </div>
-      </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-        {/* Search Bar */}
-        <Card className="mb-6">
-          <CardContent className="pt-6">
-            <div className="flex gap-2">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input
-                  placeholder="Search by Customer ID, Order ID, Phone, or Name..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <Button onClick={() => loadDashboardData()}>
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Refresh
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Tabs */}
-        <div className="flex flex-wrap gap-2 mb-8 bg-gray-100/50 p-1.5 rounded-lg border border-gray-100 inline-flex">
+        <nav className="p-4 space-y-1">
           <Button
-            variant={activeTab === 'overview' ? 'default' : 'ghost'}
-            className={`rounded-md ${activeTab === 'overview' ? 'shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+            variant="ghost"
             onClick={() => setActiveTab('overview')}
+            className={`w-full justify-start ${activeTab === 'overview' ? 'bg-pink-50 text-pink-700' : 'text-gray-600 hover:bg-gray-50'}`}
           >
+            <LayoutDashboard className="w-5 h-5 mr-3" />
             Overview
           </Button>
           <Button
-            variant={activeTab === 'customers' ? 'default' : 'ghost'}
-            className={`rounded-md ${activeTab === 'customers' ? 'shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+            variant="ghost"
             onClick={() => setActiveTab('customers')}
+            className={`w-full justify-start ${activeTab === 'customers' ? 'bg-pink-50 text-pink-700' : 'text-gray-600 hover:bg-gray-50'}`}
           >
+            <Users className="w-5 h-5 mr-3" />
             Customers
           </Button>
           <Button
-            variant={activeTab === 'orders' ? 'default' : 'ghost'}
-            className={`rounded-md ${activeTab === 'orders' ? 'shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+            variant="ghost"
             onClick={() => setActiveTab('orders')}
+            className={`w-full justify-start ${activeTab === 'orders' ? 'bg-pink-50 text-pink-700' : 'text-gray-600 hover:bg-gray-50'}`}
           >
+            <ShoppingBag className="w-5 h-5 mr-3" />
             Orders
           </Button>
           <Button
-            variant={activeTab === 'reports' ? 'default' : 'ghost'}
-            className={`rounded-md ${activeTab === 'reports' ? 'shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+            variant="ghost"
             onClick={() => setActiveTab('reports')}
+            className={`w-full justify-start ${activeTab === 'reports' ? 'bg-pink-50 text-pink-700' : 'text-gray-600 hover:bg-gray-50'}`}
           >
+            <BarChart3 className="w-5 h-5 mr-3" />
             Reports
           </Button>
+        </nav>
+
+        <div className="absolute bottom-0 w-full p-4 border-t border-gray-50 bg-white">
+          <Button
+            variant="ghost"
+            onClick={handleLogout}
+            className="w-full justify-start text-gray-500 hover:text-red-600 hover:bg-red-50"
+          >
+            <LogOut className="w-5 h-5 mr-3" />
+            Logout
+          </Button>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-1 ml-64 p-8">
+        {/* Top Header / Search */}
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-800 capitalize">{activeTab}</h2>
+            <p className="text-sm text-gray-500">Manage your store's {activeTab}</p>
+          </div>
+          <div className="flex gap-3">
+            <div className="relative w-64">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Input
+                placeholder="Search..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 bg-white shadow-sm border-gray-200"
+              />
+            </div>
+            <Button variant="outline" onClick={() => loadDashboardData()} className="bg-white shadow-sm">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Refresh
+            </Button>
+          </div>
         </div>
 
-        {/* Overview Tab */}
         {activeTab === 'overview' && stats && (
           <div className="space-y-8">
             {/* Stats Cards */}
@@ -1007,9 +1046,29 @@ export default function AdminDashboard() {
                                 <SelectItem value="Confirmed">Confirmed</SelectItem>
                                 <SelectItem value="Processing">Processing</SelectItem>
                                 <SelectItem value="Shipped">Shipped</SelectItem>
-                                <SelectItem value="Delivered">Delivered</SelectItem>
                               </SelectContent>
                             </Select>
+
+                            <Button
+                              className={`flex-1 md:flex-none border transition-colors ${sentMessages.has(order._id)
+                                ? "bg-green-100/80 text-green-700 border-green-200 hover:bg-green-200"
+                                : "bg-sky-100/80 text-sky-700 border-sky-200 hover:bg-sky-200"
+                                }`}
+                              variant="ghost"
+                              onClick={() => handleWhatsAppSend(order)}
+                            >
+                              {sentMessages.has(order._id) ? (
+                                <>
+                                  <Check className="w-4 h-4 mr-2" />
+                                  Sanded
+                                </>
+                              ) : (
+                                <>
+                                  <MessageCircle className="w-4 h-4 mr-2" />
+                                  Send
+                                </>
+                              )}
+                            </Button>
 
                             <div className="flex gap-2 w-full md:w-auto">
                               <Button
@@ -1559,7 +1618,7 @@ export default function AdminDashboard() {
             </div>
           </div>
         )}
-      </div>
+      </main>
 
       {/* Edit Customer Dialog */}
       <Dialog open={isEditCustomerDialogOpen} onOpenChange={setIsEditCustomerDialogOpen}>
@@ -1634,6 +1693,6 @@ export default function AdminDashboard() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </div >
   );
 }
