@@ -1,0 +1,194 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Natural wellness color palette */
+    --background: 42 50% 96%;
+    /* Soft cream */
+    --foreground: 25 30% 25%;
+    /* Warm dark brown */
+
+    --card: 0 0% 100%;
+    /* Pure white */
+    --card-foreground: 25 30% 25%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 25 30% 25%;
+
+    /* Wellness brand colors */
+    --primary: 120 25% 55%;
+    /* Soft sage green */
+    --primary-foreground: 0 0% 100%;
+    --primary-light: 120 35% 85%;
+    /* Light sage */
+
+    --secondary: 340 50% 85%;
+    /* Soft pink */
+    --secondary-foreground: 25 30% 25%;
+
+    --accent: 50 65% 88%;
+    /* Light yellow */
+    --accent-foreground: 25 30% 25%;
+
+    --wellness-cream: 42 50% 96%;
+    --wellness-pink: 340 50% 85%;
+    --wellness-yellow: 50 65% 88%;
+    --wellness-green: 120 25% 55%;
+    --wellness-green-light: 120 35% 85%;
+
+    --muted: 42 30% 90%;
+    --muted-foreground: 25 20% 45%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 42 30% 88%;
+    --input: 42 30% 88%;
+    --ring: 120 25% 55%;
+
+    --radius: 1rem;
+
+    /* Gradients */
+    --gradient-wellness: linear-gradient(135deg, hsl(var(--wellness-cream)) 0%, hsl(var(--wellness-pink)) 50%, hsl(var(--wellness-yellow)) 100%);
+    --gradient-soft: linear-gradient(180deg, hsl(var(--wellness-green-light)) 0%, hsl(var(--wellness-cream)) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(var(--wellness-cream)) 0%, hsl(var(--wellness-green-light)) 100%);
+
+    /* Shadows */
+    --shadow-soft: 0 4px 20px -4px hsl(var(--wellness-green) / 0.15);
+    --shadow-card: 0 8px 30px -8px hsl(var(--wellness-green) / 0.2);
+    --shadow-hero: 0 20px 60px -20px hsl(var(--wellness-green) / 0.25);
+
+    /* Typography */
+    --font-heading: 'Playfair Display', serif;
+    --font-body: 'Inter', sans-serif;
+
+    /* Animations */
+    --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Wellness-themed colors */
+    --wellness-pink: 340 75% 85%;
+    --wellness-green: 140 45% 70%;
+    --wellness-cream: 40 40% 95%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+
+    --wellness-pink: 340 75% 65%;
+    --wellness-green: 140 45% 60%;
+    --wellness-cream: 40 20% 20%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    width: 100%;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-body);
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    width: 100%;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-heading);
+  }
+}
+
+@layer components {
+  .wellness-gradient {
+    background: var(--gradient-wellness);
+  }
+
+  .soft-gradient {
+    background: var(--gradient-soft);
+  }
+
+  .hero-gradient {
+    background: var(--gradient-hero);
+  }
+
+  .shadow-soft {
+    box-shadow: var(--shadow-soft);
+  }
+
+  .shadow-card {
+    box-shadow: var(--shadow-card);
+  }
+
+  .shadow-hero {
+    box-shadow: var(--shadow-hero);
+  }
+
+  .transition-smooth {
+    transition: var(--transition-smooth);
+  }
+
+  .transition-bounce {
+    transition: var(--transition-bounce);
+  }
+}

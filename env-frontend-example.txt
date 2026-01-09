@@ -1,0 +1,6 @@
+# Google Sheets URL (for legacy support)
+VITE_GOOGLE_SHEET_URL=your_google_sheet_url_here
+
+# Backend API URL
+VITE_API_URL=http://localhost:5000/api
+
