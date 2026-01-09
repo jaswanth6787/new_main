@@ -141,10 +141,10 @@ const ContactUs = () => {
                   <div>
                     <p className="font-semibold text-gray-900 text-sm uppercase tracking-wide">Phone</p>
                     <a 
-                      href="tel:+91XXXXXXXXXX" 
+                      href="tel:+917660922416" 
                       className="text-green-600 hover:text-green-700 hover:underline text-lg font-medium"
                     >
-                      +91XXXXXXXXXX
+                      +917660922416
                     </a>
                   </div>
                 </div>

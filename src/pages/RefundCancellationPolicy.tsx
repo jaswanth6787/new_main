@@ -285,8 +285,8 @@ const RefundCancellationPolicy = () => {
                 </div>
                 <div>
                   <p className="font-semibold text-gray-900 text-lg">Phone</p>
-                  <a href="tel:+91XXXXXXXXXX" className="text-pink-600 hover:text-pink-700 hover:underline">
-                    +91XXXXXXXXXX
+                  <a href="tel:+917660922416" className="text-pink-600 hover:text-pink-700 hover:underline">
+                    +917660922416
                   </a>
                 </div>
               </div>
